@@ -1,0 +1,17 @@
+# try:
+#     with open("config.txt",'r') as config_file:
+#         content = config_file.readlines()
+#         print(content)
+# except (PermissionError , FileNotFoundError) as e:
+#     print(e)
+# line = "end_hub: goal 10 10 [color=yellow] #comment".split('#')[0].strip()
+# print(line)
+# map_data = {}
+# map_data.setdefault("connections").append("trrr")
+# print(map_data["connections"])
+
+same corrconate
+
+same connection zonex zonex
+
+color single word
