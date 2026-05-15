@@ -1,5 +1,5 @@
 import sys
-from typing import List, Dict, Set, Tuple, Any, Optional
+from typing import List, Dict, Set, Tuple, Any
 from base_cls import CreateZone, CreateConnection
 from fly_in import Map
 
@@ -7,13 +7,11 @@ from fly_in import Map
 class MapParser:
     """Parses a drone map configuration file and builds a Map object."""
 
-    def __init__(self, filepath: str) -> None:
+    def __init__(self, filename: str) -> None:
         """Initialize the parser with the path to the map file.
 
-        Args:
-            filepath: Path to the map configuration file.
         """
-        self.filepath: str = filepath
+        self.filename: str = filename
         self._map_data: Dict[str, Any] = {}
         self._zones_by_name: Dict[str, CreateZone] = {}
         self._seen_connections: Set[Tuple[str, str]] = set()
@@ -28,9 +26,6 @@ class MapParser:
         self._parse_lines(content)
         return self._build_map()
 
-    # ------------------------------------------------------------------ #
-    #  Private: file reading                                               #
-    # ------------------------------------------------------------------ #
 
     def _read_file(self) -> List[str]:
         """Open and read the map file.
@@ -39,15 +34,12 @@ class MapParser:
             List of raw lines from the file.
         """
         try:
-            with open(self.filepath, 'r') as f:
+            with open(self.filename, 'r') as f:
                 return f.readlines()
         except (PermissionError, FileNotFoundError) as e:
             print(f"File error: {e}")
             sys.exit(1)
 
-    # ------------------------------------------------------------------ #
-    #  Private: line dispatching                                           #
-    # ------------------------------------------------------------------ #
 
     def _parse_lines(self, content: List[str]) -> None:
         """Iterate over lines and dispatch each to the correct handler.
@@ -65,7 +57,7 @@ class MapParser:
                     line = line.split('#')[0].strip()
 
                 if ':' not in line:
-                    raise ValueError(f"Line {index}: Missing colon separator.")
+                    raise ValueError(f"Line {index} : Missing colon separator.")
 
                 prefix, data = line.split(':', 1)
                 prefix, data = prefix.strip(), data.strip()
@@ -108,18 +100,11 @@ class MapParser:
             print(f"Parsing error: {e}")
             sys.exit(1)
 
-    # ------------------------------------------------------------------ #
-    #  Private: hub parsing                                                #
-    # ------------------------------------------------------------------ #
 
     def _parse_hub(self, data_str: str, hub_type: str, line_num: int) -> None:
         """Parse a hub line and store the resulting Zone.
-
-        Args:
-            data_str: The part of the line after the prefix colon.
-            hub_type: One of 'hub', 'start_hub', 'end_hub'.
-            line_num: Current line number for error messages.
         """
+
         parts = data_str.split()
 
         if len(parts) < 3:
@@ -146,12 +131,14 @@ class MapParser:
 
         color, zone_type, max_drones = "none", "normal", 1
 
-        if len(parts) >= 4:
+        if len(parts) > 4:
+            raise ValueError(line_num, "Too many fields. Expected: name x y [metadata].")
+        
+        if len(parts) == 4:
             color, zone_type, max_drones = self._parse_zone_metadata(
                 parts[3], line_num
             )
 
-        # matches CreateZone(name, x, y, zone_type, max_drones, color)
         zone = CreateZone(name, x, y, zone_type, max_drones, color)
 
         if hub_type == "hub":
@@ -161,14 +148,11 @@ class MapParser:
 
         self._zones_by_name[name] = zone
 
+
     def _parse_zone_metadata(
         self, meta_str: str, line_num: int
     ) -> Tuple[str, str, int]:
         """Parse the metadata block of a zone line.
-
-        Args:
-            meta_str: Raw metadata string e.g. '[zone=restricted color=red]'.
-            line_num: Current line number for error messages.
 
         Returns:
             Tuple of (color, zone_type, max_drones).

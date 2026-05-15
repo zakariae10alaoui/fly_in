@@ -10,8 +10,11 @@
 # map_data.setdefault("connections").append("trrr")
 # print(map_data["connections"])
 
-same corrconate
+# same corrconate
 
-same connection zonex zonex
+# same connection zonex zonex
 
-color single word
+# color single word
+line = " ltltltl: ltltltltee333:444"
+line = line.split(':', 1)
+print(line)
