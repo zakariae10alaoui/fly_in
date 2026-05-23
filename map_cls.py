@@ -1,5 +1,5 @@
 from typing import Tuple
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional , Dict
 
 class CreateZone:
     """Represents a location in the drone network."""
@@ -30,7 +30,8 @@ class CreateConnection:
         zone2: CreateZone, 
         max_link_capacity: int = 1
     ):
-        self.zones: Tuple[CreateZone, CreateZone] = (zone1, zone2)  
+        self.zone1 = zone1
+        self.zone2 = zone2 
         self.max_link_capacity: int = max_link_capacity 
         self.current_usage: int = 0 
 
@@ -47,3 +48,22 @@ class CreateDrone:
         self.in_transit_to: Optional[CreateZone] = None  
         self.turns_remaining: int = 0  
         self.delivered: bool = False 
+
+
+class Map:
+    """Central object that connects zones, connections, and drones together."""
+
+    def __init__(
+        self,
+        nb_drones: int,
+        start_zone: CreateZone,
+        end_zone: CreateZone,
+        zones_by_name: Dict[str, CreateZone],
+        connections_by_name: Dict[str, CreateConnection],
+    ) -> None:
+        self.nb_drones = nb_drones
+        self.start_zone = start_zone
+        self.end_zone = end_zone
+        self.zones_by_name = zones_by_name
+        self.connections_by_name = connections_by_name
+        self.drones: List[CreateDrone] = []

@@ -15,6 +15,12 @@
 # same connection zonex zonex
 
 # color single word
-line = " ltltltl: ltltltltee333:444"
-line = line.split(':', 1)
-print(line)
+# line = " ltltltl: ltltltltee333:444"
+# line = line.split(':', 1)
+# print(line)
+
+
+pair = tuple(sorted(("roof1", "roof2"))) 
+print(pair)
+pair = tuple(sorted(("roof2", "roof1"))) 
+print(pair)
