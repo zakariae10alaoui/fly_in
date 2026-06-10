@@ -19,7 +19,6 @@ class CreateZone:
         self.zone_type: str = zone_type 
         self.max_drones: int = max_drones
         self.current_drones: List['CreateDrone'] = []
-        self.neighbors: List['CreateConnection'] = []
 
 class CreateConnection:
     """Represents a bidirectional path between two zones."""
@@ -67,3 +66,27 @@ class Map:
         self.zones_by_name = zones_by_name
         self.connections_by_name = connections_by_name
         self.drones: List[CreateDrone] = []
+
+    def get_neighbors_with_cost(self, current_zone: CreateZone) -> List[Tuple[CreateZone, int]]:
+        """
+        Finds all connected zones and calculates the turn cost to enter them.
+        Returns a list of tuples: (NeighborZoneObject, cost_integer)
+        """
+        neighbors: List[Tuple[CreateZone, int]] = []
+        
+        for connection in self.connections_by_name.values():
+            neighbor_zone = None
+            
+            if connection.zone1 == current_zone:
+                neighbor_zone = connection.zone2
+            elif connection.zone2 == current_zone:
+                neighbor_zone = connection.zone1
+                
+            if neighbor_zone:
+                cost = 2 if neighbor_zone.zone_type == "restricted" else 1
+                
+                if neighbor_zone.zone_type != "blocked":
+                    neighbors.append((neighbor_zone, cost))
+                    
+        return neighbors
+

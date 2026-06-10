@@ -20,7 +20,7 @@
 # print(line)
 
 
-pair = tuple(sorted(("roof1", "roof2"))) 
-print(pair)
-pair = tuple(sorted(("roof2", "roof1"))) 
-print(pair)
+# pair = tuple(sorted(("roof1", "roof2"))) 
+# print(pair)
+# pair = tuple(sorted(("roof2", "roof1"))) 
+# print(pair)
