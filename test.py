@@ -24,3 +24,17 @@
 # print(pair)
 # pair = tuple(sorted(("roof2", "roof1"))) 
 # print(pair)
+
+# neighbors problem in map class
+# t = float("inf")
+# if t > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000:
+#     print("true")
+# else:
+#     print("false")
+
+import heapq
+tt = []
+heapq.heappush(tt, 43)
+heapq.heappush(tt, 436)
+heapq.heappush(tt, 54)
+print(tt)g

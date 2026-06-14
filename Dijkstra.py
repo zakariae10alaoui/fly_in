@@ -7,20 +7,25 @@ class PathFinder:
     
     def __init__(self, map_data : Map):
         self.map = map_data
-        self.distances: Dict[str, float] = {}
-        self.previous_nodes: Dict[str, Optional[str]] = {}
-        self.pq: List[Tuple[float, str]] = []
+        self.zone_distances: Dict[str, float] = {}
+        self.previous_zone: Dict[str, Optional[str]] = {}
+        self.to_visit: List[Tuple[float, str]] = []
 
     def setup_dijkstra(self):
         """Initializes the data structures before running the loop."""
         for zone_name in self.map.zones_by_name.keys():
-            self.distances[zone_name] = float('inf')
-            self.previous_nodes[zone_name] = None
+            self.zone_distances[zone_name] = float('inf')
+            self.previous_zone[zone_name] = None
 
         start_name = self.map.start_zone.name
-        self.distances[start_name] = 0
+        end_name = self.map.end_zone.name
+
+        self.zone_distances[end_name] = float('inf')
+        self.zone_distances[start_name] = 0
+        self.previous_zone[start_name] = None
+        self.previous_zone[end_name] = None
         
-        heapq.heappush(self.pq, (0, start_name))
+        heapq.heappush(self.to_visit, (0, start_name))
     
     def calculate_short_path(self) -> List[str]:
         """Runs Dijkstra's algorithm and returns the optimal path."""
@@ -29,13 +34,13 @@ class PathFinder:
         
         end_name = self.map.end_zone.name
 
-        while self.pq:
-            current_cost, current_zone_name = heapq.heappop(self.pq)
+        while self.to_visit:
+            current_cost, current_zone_name = heapq.heappop(self.to_visit)
 
             if current_zone_name == end_name:
                 break
 
-            if current_cost > self.distances[current_zone_name]:
+            if current_cost > self.zone_distances[current_zone_name]:
                 continue
 
             current_zone_obj = self.map.zones_by_name[current_zone_name]
@@ -45,12 +50,12 @@ class PathFinder:
                 
                 new_cost = current_cost + float(move_cost)
 
-                if new_cost < self.distances[neighbor_name]:
+                if new_cost < self.zone_distances[neighbor_name]:
                     
-                    self.distances[neighbor_name] = new_cost
-                    self.previous_nodes[neighbor_name] = current_zone_name
+                    self.zone_distances[neighbor_name] = new_cost
+                    self.previous_zone[neighbor_name] = current_zone_name
                     
-                    heapq.heappush(self.pq, (new_cost, neighbor_name))
+                    heapq.heappush(self.to_visit, (new_cost, neighbor_name))
         
         
         return [] 
