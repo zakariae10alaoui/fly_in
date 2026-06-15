@@ -67,7 +67,7 @@ class Map:
         self.connections_by_name = connections_by_name
         self.drones: List[CreateDrone] = []
 
-    def get_neighbors_with_cost(self, current_zone: CreateZone) -> List[Tuple[CreateZone, int]]:
+    def get_neighbors_with_cost(self, current_zone: CreateZone) -> List[Tuple[int , CreateZone]]:
         """
         Finds all connected zones and calculates the turn cost to enter them.
         Returns a list of tuples: (NeighborZoneObject, cost_integer)
@@ -77,16 +77,16 @@ class Map:
         for connection in self.connections_by_name.values():
             neighbor_zone = None
             
-            if connection.zone1 == current_zone:
+            if connection.zone1.name == current_zone.name:
                 neighbor_zone = connection.zone2
-            elif connection.zone2 == current_zone:
+            elif connection.zone2.name == current_zone.name:
                 neighbor_zone = connection.zone1
                 
             if neighbor_zone:
+                if neighbor_zone.zone_type == "blocked":
+                    continue
                 cost = 2 if neighbor_zone.zone_type == "restricted" else 1
-                
-                if neighbor_zone.zone_type != "blocked":
-                    neighbors.append((neighbor_zone, cost))
+                neighbors.append((cost , neighbor_zone))
                     
         return neighbors
 

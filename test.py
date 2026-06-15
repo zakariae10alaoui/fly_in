@@ -34,7 +34,10 @@
 
 import heapq
 tt = []
-heapq.heappush(tt, 43)
-heapq.heappush(tt, 436)
-heapq.heappush(tt, 54)
-print(tt)g
+
+heapq.heappush(tt, (43,5))
+heapq.heappush(tt, (43,56))
+print(tt)
+heapq.heappush(tt, (43,54))
+print(tt)
+print(heapq.heappop(tt))

@@ -1,6 +1,6 @@
 import heapq
 from map_cls import Map
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple , Set
 
 class PathFinder:
     """Handles routing logic using Dijkstra's algorithm."""
@@ -10,6 +10,7 @@ class PathFinder:
         self.zone_distances: Dict[str, float] = {}
         self.previous_zone: Dict[str, Optional[str]] = {}
         self.to_visit: List[Tuple[float, str]] = []
+        self.visited : Set = ()
 
     def setup_dijkstra(self):
         """Initializes the data structures before running the loop."""
@@ -39,12 +40,15 @@ class PathFinder:
 
             if current_zone_name == end_name:
                 break
+            
+            if current_zone_name in self.visited:
+                continue
 
             if current_cost > self.zone_distances[current_zone_name]:
                 continue
 
             current_zone_obj = self.map.zones_by_name[current_zone_name]
-
+ 
             for neighbor_zone, move_cost in self.map.get_neighbors_with_cost(current_zone_obj):
                 neighbor_name = neighbor_zone.name
                 
