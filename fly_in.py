@@ -1,5 +1,6 @@
 import sys
 from map_parsing import MapParser
+from dijkstra import PathFinder
 
 
 def main() -> None:
@@ -21,6 +22,12 @@ def main() -> None:
     print("-"* 50)
 
     print(game_map.connections_by_name.keys())
+
+    print("-"* 50)
+    
+    solution = PathFinder(game_map)
+
+    solution.calculate_short_path()
 
 
 if __name__ == "__main__":

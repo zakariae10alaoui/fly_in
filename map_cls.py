@@ -89,4 +89,12 @@ class Map:
                 neighbors.append((cost , neighbor_zone))
                     
         return neighbors
+    
+    def get_zone(self, name: str) -> CreateZone:
+        """Look up any zone by name including start and end."""
+        if self.start_zone.name == name:
+            return self.start_zone
+        if self.end_zone.name == name:
+            return self.end_zone
+        return self.zones_by_name.get(name)
 

@@ -32,12 +32,17 @@
 # else:
 #     print("false")
 
-import heapq
-tt = []
+# import heapq
+# tt = []
 
-heapq.heappush(tt, (43,5))
-heapq.heappush(tt, (43,56))
+# heapq.heappush(tt, (43,5))
+# heapq.heappush(tt, (43,56))
+# print(tt)
+# heapq.heappush(tt, (43,54))
+# print(tt)
+# print(heapq.heappop(tt))
+
+tt = [1,2,3,4,5]
+tt.reverse()
+
 print(tt)
-heapq.heappush(tt, (43,54))
-print(tt)
-print(heapq.heappop(tt))
