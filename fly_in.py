@@ -27,8 +27,8 @@ def main() -> None:
     
     solution = PathFinder(game_map)
 
-    solution.calculate_short_path()
-
+    path = solution.calculate_short_path()
+    print(path)
 
 if __name__ == "__main__":
     main()

@@ -67,28 +67,35 @@ class Map:
         self.connections_by_name = connections_by_name
         self.drones: List[CreateDrone] = []
 
-    def get_neighbors_with_cost(self, current_zone: CreateZone) -> List[Tuple[int , CreateZone]]:
-        """
-        Finds all connected zones and calculates the turn cost to enter them.
-        Returns a list of tuples: (NeighborZoneObject, cost_integer)
-        """
-        neighbors: List[Tuple[CreateZone, int]] = []
-        
-        for connection in self.connections_by_name.values():
-            neighbor_zone = None
+    def get_neighbors_with_cost(self, current_zone: CreateZone) -> List[Tuple[float, CreateZone]]:
+            """
+            Finds all connected zones and calculates the turn cost to enter them.
+            Returns a list of tuples: (cost_float, NeighborZoneObject)
+            """
+            neighbors: List[Tuple[float, CreateZone]] = []
             
-            if connection.zone1.name == current_zone.name:
-                neighbor_zone = connection.zone2
-            elif connection.zone2.name == current_zone.name:
-                neighbor_zone = connection.zone1
+            for connection in self.connections_by_name.values():
+                neighbor_zone = None
                 
-            if neighbor_zone:
-                if neighbor_zone.zone_type == "blocked":
-                    continue
-                cost = 2 if neighbor_zone.zone_type == "restricted" else 1
-                neighbors.append((cost , neighbor_zone))
+                if connection.zone1.name == current_zone.name:
+                    neighbor_zone = connection.zone2
+                elif connection.zone2.name == current_zone.name:
+                    neighbor_zone = connection.zone1
                     
-        return neighbors
+                if neighbor_zone:
+                    if neighbor_zone.zone_type == "blocked":
+                        continue
+                    
+                    if neighbor_zone.zone_type == "restricted":
+                        cost = 2.0
+                    elif neighbor_zone.zone_type == "priority":
+                        cost = 0.9
+                    else:
+                        cost = 1.0  
+                    
+                    neighbors.append((cost, neighbor_zone))
+                        
+            return neighbors
     
     def get_zone(self, name: str) -> CreateZone:
         """Look up any zone by name including start and end."""
