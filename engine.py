@@ -1,10 +1,12 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple , List
+from map_cls import Map
 
 class TheEngine:
-    def __init__(self) -> None:
+    def __init__(self,map : Map) -> None:
+        self.map = map
         self.zone_bookings: Dict[Tuple[str, int], int] = {}
-        
         self.link_bookings: Dict[Tuple[str, str, int], int] = {}
+        self.final_drones_paths = {}
 
     def get_link_key(self, zone_a: str, zone_b: str, turn: int) -> Tuple[str, str, int]:
         """
@@ -40,3 +42,63 @@ class TheEngine:
             self.link_bookings[key] -= 1
             if self.link_bookings[key] <= 0:
                 del self.link_bookings[key]
+    
+    def is_zone_available(self, zone_name: str, turn: int) -> bool:
+        """
+        Returns True if the zone has space available at the given turn.
+        Returns False if the zone is already full.
+        """
+        if zone_name == self.map.start_zone.name or zone_name == self.map.end_zone.name:  
+            return True
+            
+        key = (zone_name, turn)
+        current_capacity = self.zone_bookings.get(key, 0)
+        
+        if current_capacity < self.map._zones_by_name[zone_name].max_drones:
+            return True
+        
+        return False
+    
+    def is_link_available(self, zone_a: str, zone_b: str, turn: int) -> bool:
+        """
+        Returns True if the connection link has available capacity at the given turn.
+        """
+        booking_key = self.get_link_key(zone_a, zone_b, turn)
+        current_traffic = self.link_bookings.get(booking_key, 0)
+        
+        forward_key = f"{zone_a}-{zone_b}"
+        
+        if forward_key in self.map.connections_by_name:
+            connection_obj = self.map.connections_by_name[forward_key]
+        else:
+            backward_key = f"{zone_b}-{zone_a}"
+            connection_obj = self.map.connections_by_name[backward_key]
+            
+        max_capacity = connection_obj.max_link_capacity
+        
+        return current_traffic < max_capacity
+    
+    def drive_all_drones(self, pathfinder: 'PathFinder') -> None:
+        """
+        Iterates through drones one by one, finds their safe space-time path, 
+        and immediately updates reservations.
+        """
+        for drone_id in self.map.drones:
+            safe_path = pathfinder.calculate_short_path(self)
+            
+            if not safe_path:
+                print(f"Warning: No valid safe path found for {drone_id}!")
+                continue
+                
+            self.final_drones_paths[drone_id] = safe_path
+            
+    
+            for i in range(len(safe_path)):
+                current_zone, current_turn = safe_path[i]
+                
+                self.reserve_zone(current_zone,current_turn)
+                
+                if i < len(safe_path) - 1:
+                    next_zone, _ = safe_path[i + 1]
+                    if current_zone != next_zone:
+                        self.reserve_link(current_zone, next_zone, current_turn)

@@ -59,13 +59,14 @@ class Map:
         end_zone: CreateZone,
         zones_by_name: Dict[str, CreateZone],
         connections_by_name: Dict[str, CreateConnection],
+        drones : List[CreateDrone] 
     ) -> None:
         self.nb_drones = nb_drones
         self.start_zone = start_zone
         self.end_zone = end_zone
         self.zones_by_name = zones_by_name
         self.connections_by_name = connections_by_name
-        self.drones: List[CreateDrone] = []
+        self.drones = drones
 
     def get_neighbors_with_cost(self, current_zone: CreateZone) -> List[Tuple[float, CreateZone]]:
             """

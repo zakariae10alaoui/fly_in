@@ -1,6 +1,6 @@
 import sys
 from typing import Dict, Set, Tuple, Optional, List
-from map_cls import CreateZone, CreateConnection,Map
+from map_cls import CreateZone, CreateConnection,Map,CreateDrone
 
 
 class MapParser:
@@ -270,10 +270,15 @@ class MapParser:
 
     def _build_map(self) -> Map:
         """Assemble and return the Map object from parsed data."""
+        drones = []
+        for i in range(self._nb_drones):
+            drones.append(CreateDrone(i,self._start_zone))
+
         return Map(
             nb_drones=self._nb_drones,
             start_zone=self._start_zone,
             end_zone=self._end_zone,
             zones_by_name=self._zones_by_name,
             connections_by_name=self._connections_by_name,
+            drones=drones
         )
