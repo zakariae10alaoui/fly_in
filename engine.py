@@ -54,7 +54,8 @@ class TheEngine:
         key = (zone_name, turn)
         current_capacity = self.zone_bookings.get(key, 0)
         
-        if current_capacity < self.map._zones_by_name[zone_name].max_drones:
+        #  AFTER (Corrected)
+        if current_capacity < self.map.zones_by_name[zone_name].max_drones:
             return True
         
         return False
