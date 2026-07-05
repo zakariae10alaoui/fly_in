@@ -22,27 +22,11 @@ class TheEngine:
         key = (zone_name, turn)
         self.zone_bookings[key] = self.zone_bookings.get(key, 0) + 1
 
-    def release_zone(self, zone_name: str, turn: int) -> None:
-        """Decrements the scheduled drone count, cleaning up the key if it drops to 0."""
-        key = (zone_name, turn)
-        if key in self.zone_bookings:
-            self.zone_bookings[key] -= 1
-            if self.zone_bookings[key] <= 0:
-                del self.zone_bookings[key]
-
     def reserve_link(self, zone_a: str, zone_b: str, turn: int) -> None:
         """Increments the scheduled traffic count for a connection link at a specific turn."""
         key = self.get_link_key(zone_a, zone_b, turn)
         self.link_bookings[key] = self.link_bookings.get(key, 0) + 1
 
-    def release_link(self, zone_a: str, zone_b: str, turn: int) -> None:
-        """Decrements the scheduled traffic count for a connection link, cleaning up keys at 0."""
-        key = self.get_link_key(zone_a, zone_b, turn)
-        if key in self.link_bookings:
-            self.link_bookings[key] -= 1
-            if self.link_bookings[key] <= 0:
-                del self.link_bookings[key]
-    
     def is_zone_available(self, zone_name: str, turn: int) -> bool:
         """
         Returns True if the zone has space available at the given turn.
@@ -54,7 +38,6 @@ class TheEngine:
         key = (zone_name, turn)
         current_capacity = self.zone_bookings.get(key, 0)
         
-        #  AFTER (Corrected)
         if current_capacity < self.map.zones_by_name[zone_name].max_drones:
             return True
         
@@ -93,7 +76,6 @@ class TheEngine:
                 
             self.final_drones_paths[drone_id] = safe_path
             
-    
             for i in range(len(safe_path)):
                 current_zone, current_turn = safe_path[i]
                 

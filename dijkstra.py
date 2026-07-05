@@ -35,26 +35,34 @@ class PathFinder:
         next_turn = current_turn + 1
         neighbors: List[Tuple[float, Tuple[str, int]]] = []
 
-        # 1. EXPAND WAIT STATE (Drone stays in the same zone for 1 turn)
         if engine.is_zone_available(current_zone_name, next_turn):
             neighbors.append((1.0, (current_zone_name, next_turn)))
 
-        # 2. EXPAND PHYSICAL MOVEMENTS (Drone moves to adjacent zones)
         current_zone_obj = self.map.get_zone(current_zone_name)
         physical_neighbors = self.map.get_neighbors_with_cost(current_zone_obj)
 
         for move_cost, neighbor_zone in physical_neighbors:
             neighbor_name = neighbor_zone.name
-            
-            # Cross-reference reservations with the Engine
-            if not engine.is_link_available(current_zone_name, neighbor_name, current_turn):
-                continue
-            if not engine.is_zone_available(neighbor_name, next_turn):
-                continue
-            
-            # Use a floor cost constraint to preserve time synchronization
-            adjusted_cost = max(move_cost, 1.0)
-            neighbors.append((adjusted_cost, (neighbor_name, next_turn)))
+
+            if neighbor_zone.zone_type == "restricted":
+                transit_turn = current_turn + 1
+                arrival_turn = current_turn + 2
+
+                if not engine.is_link_available(current_zone_name, neighbor_name, transit_turn):
+                    continue
+
+                if not engine.is_zone_available(neighbor_name, arrival_turn):
+                    continue
+
+                neighbors.append((move_cost, (neighbor_name, arrival_turn)))
+
+            else: 
+                if not engine.is_link_available(current_zone_name, neighbor_name, current_turn):
+                    continue
+                if not engine.is_zone_available(neighbor_name, next_turn):
+                    continue
+
+                neighbors.append((move_cost, (neighbor_name, next_turn)))
 
         return neighbors
     
@@ -64,24 +72,18 @@ class PathFinder:
         
         end_name = self.map.end_zone.name
         final_zone_state: Optional[Tuple[str, int]] = None
-        max_turns = 100  # Built-in guardrail limit
 
         while self.to_visit:
             current_cost, current_state = heapq.heappop(self.to_visit)
             current_zone_name, current_turn = current_state
 
-            # Goal reached!
             if current_zone_name == end_name:
                 final_zone_state = current_state
                 break
 
-            if current_turn >= max_turns:
-                continue
-
             if current_cost > self.zone_distances.get(current_state, float('inf')):
                 continue
 
-            # FIXED: Calls self instead of self.map, passes engine, and matches variable schema
             for edge_cost, neighbor_state in self.get_space_time_neighbors(current_state, engine):
                 new_cost = current_cost + edge_cost
 
@@ -97,7 +99,6 @@ class PathFinder:
     
     def reverse_path(self, final_zone_state: Tuple[str, int]) -> List[Tuple[str, int]]:
         """Walks previous_zone backwards to build the final path."""
-        # FIXED: Changed from tuple syntax () to an actual mutable list []
         path: List[Tuple[str, int]] = []
         current: Optional[Tuple[str, int]] = final_zone_state
 
