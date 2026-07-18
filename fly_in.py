@@ -1,5 +1,9 @@
 import sys
+import arcade
+
+
 from map_parsing import MapParser  
+from visual import Visualizer
 from engine import TheEngine
 from dijkstra import PathFinder
 
@@ -41,6 +45,9 @@ def main() -> None:
     print("=" * 50)
     print(f"🏁 ALL DRONES REACHED THE DESTINATION IN: {total_turns_needed} TURNS")
     print("=" * 50)
+    
+    picaso = Visualizer(game_map)
+    arcade.run()
 
 if __name__ == "__main__":
     main()
