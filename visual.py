@@ -1,5 +1,5 @@
 import arcade
-from typing import Tuple
+from typing import Tuple, Dict ,List
 
 class Visualizer(arcade.Window):
     def __init__(self, map_data) -> None:
@@ -21,9 +21,16 @@ class Visualizer(arcade.Window):
     def on_draw(self) -> None:
         self.clear()  
         self.draw_connections()
+        self.draw_zones()
 
     def on_update(self, delta_time: float) -> None:
         pass
+
+    def draw_zones(self) -> None:
+        for zone in self.map.zones_by_name.values():
+            center_x, center_y = self.zone_to_screen(zone.position)
+            color = getattr(arcade.color, zone.color.upper(), arcade.color.HOT_MAGENTA)
+            arcade.draw_circle_filled(center_x, center_y, 15, color)
 
     def draw_connections(self) -> None:
         for connection in self.map.connections_by_name:
@@ -41,3 +48,9 @@ class Visualizer(arcade.Window):
         screen_y = position_y * self.height
 
         return screen_x, screen_y
+    
+    def build_turn_log(final_drones_paths: Dict[str, List[Tuple[str, int]]]) -> List[Dict[str, str]]:
+        turn_log = {}
+        for drone_id in final_drones_paths:
+            for path in final_drones_paths[drone_id]:
+                

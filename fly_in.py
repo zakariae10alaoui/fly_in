@@ -46,7 +46,7 @@ def main() -> None:
     print(f"🏁 ALL DRONES REACHED THE DESTINATION IN: {total_turns_needed} TURNS")
     print("=" * 50)
     
-    picaso = Visualizer(game_map)
+    picasso = Visualizer(game_map)
     arcade.run()
 
 if __name__ == "__main__":
