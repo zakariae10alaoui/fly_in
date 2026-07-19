@@ -85,3 +85,7 @@
 
 #         print(f"\n--- FINAL distances: {self.zone_distances} ---")
 #         print(f"--- FINAL previous:  {self.previous_zone} ---")
+
+
+x  = min(-1,0)
+print(x)

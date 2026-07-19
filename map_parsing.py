@@ -278,7 +278,7 @@ class MapParser:
             nb_drones=self._nb_drones,
             start_zone=self._start_zone,
             end_zone=self._end_zone,
-            zones_by_name=self._zones_by_name,
+            zones_by_name=self._all_zones,
             connections_by_name=self._connections_by_name,
             drones=drones
         )
