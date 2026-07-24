@@ -89,3 +89,10 @@
 
 x  = min(-1,0)
 print(x)
+#start end blocked
+# zone linked not display not 
+
+
+
+# visula
+# camera 
