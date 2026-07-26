@@ -271,7 +271,7 @@ class MapParser:
     def _build_map(self) -> Map:
         """Assemble and return the Map object from parsed data."""
         drones = []
-        for i in range(self._nb_drones):
+        for i in range(1 ,self._nb_drones + 1):
             drones.append(CreateDrone(i,self._start_zone))
 
         return Map(

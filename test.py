@@ -96,3 +96,22 @@ print(x)
 
 # visula
 # camera 
+# /hub: waypoint1 1 0 []color=blue zone=restricted]
+
+# same coordinates
+# hub: waypoint2 2 0 [color=blue]
+# hub: waypoint21 2 0 [color=blue]
+
+#self.connection
+#kill progrm
+# eroro
+#nb_drones: 3
+
+# start_hub: start 0 0 [color=green]
+# hub: waypoint1 1 0 [color=blue zone=restricted max_drones=2]
+# hub: waypoint2 2 0 [color=blue]
+# end_hub: goal 3 0 [color=red]
+
+# connection: start-waypoint1 [max_link_capacity=2]
+# connection: waypoint1-waypoint2
+# connection: waypoint2-goal

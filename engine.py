@@ -67,14 +67,14 @@ class TheEngine:
         Iterates through drones one by one, finds their safe space-time path, 
         and immediately updates reservations.
         """
-        for drone_id in self.map.drones:
+        for drone in self.map.drones:
             safe_path = pathfinder.calculate_short_path(self)
             
             if not safe_path:
-                print(f"Warning: No valid safe path found for {drone_id}!")
+                print(f"Warning: No valid safe path found for {drone.drone_id}!")
                 continue
                 
-            self.final_drones_paths[drone_id] = safe_path
+            self.final_drones_paths[drone.drone_id] = safe_path
             
             for i in range(len(safe_path)):
                 current_zone, current_turn = safe_path[i]
@@ -82,6 +82,8 @@ class TheEngine:
                 self.reserve_zone(current_zone,current_turn)
                 
                 if i < len(safe_path) - 1:
-                    next_zone, _ = safe_path[i + 1]
+                    next_zone, next_turn = safe_path[i + 1]
                     if current_zone != next_zone:
-                        self.reserve_link(current_zone, next_zone, current_turn)
+                        gap = next_turn - current_turn
+                        for t in range(gap):
+                            self.reserve_link(current_zone, next_zone, current_turn + t)

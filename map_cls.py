@@ -98,6 +98,21 @@ class Map:
                         
             return neighbors
     
+    def is_solvable(self) -> bool:
+        visited = {self.start_zone.name}
+        queue = [self.start_zone]
+
+        while queue:
+            current = queue.pop(0)
+            for _, neighbor in self.get_neighbors_with_cost(current):
+                if neighbor.name not in visited:
+                    visited.add(neighbor.name)
+                    if neighbor.name == self.end_zone.name:
+                        return True
+                    queue.append(neighbor)
+
+        return self.end_zone.name in visited
+    
     def get_zone(self, name: str) -> CreateZone:
         """Look up any zone by name including start and end."""
         if self.start_zone.name == name:

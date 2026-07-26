@@ -36,7 +36,7 @@ class PathFinder:
         neighbors: List[Tuple[float, Tuple[str, int]]] = []
 
         if engine.is_zone_available(current_zone_name, next_turn):
-            neighbors.append((1.0, (current_zone_name, next_turn)))
+            neighbors.append((1.1, (current_zone_name, next_turn)))
 
         current_zone_obj = self.map.get_zone(current_zone_name)
         physical_neighbors = self.map.get_neighbors_with_cost(current_zone_obj)
@@ -48,6 +48,8 @@ class PathFinder:
                 transit_turn = current_turn + 1
                 arrival_turn = current_turn + 2
 
+                if not engine.is_link_available(current_zone_name, neighbor_name, current_turn):
+                    continue
                 if not engine.is_link_available(current_zone_name, neighbor_name, transit_turn):
                     continue
 
