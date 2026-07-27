@@ -37,7 +37,7 @@ class PathFinder:
 
         if engine.is_zone_available(current_zone_name, next_turn):
             neighbors.append((1.1, (current_zone_name, next_turn)))
-
+        
         current_zone_obj = self.map.get_zone(current_zone_name)
         physical_neighbors = self.map.get_neighbors_with_cost(current_zone_obj)
 

@@ -94,8 +94,7 @@ print(x)
 
 
 
-# visula
-# camera 
+
 # /hub: waypoint1 1 0 []color=blue zone=restricted]
 
 # same coordinates
@@ -115,3 +114,4 @@ print(x)
 # connection: start-waypoint1 [max_link_capacity=2]
 # connection: waypoint1-waypoint2
 # connection: waypoint2-goal
+# connection: start-waypoint1 [max_link_capacity=2 max_drones=2]

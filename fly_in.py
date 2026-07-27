@@ -14,7 +14,7 @@ def main() -> None:
     try:
         game_map = MapParser(sys.argv[1]).parse_now()
         if not game_map.is_solvable():
-              raise ValueError("this map is not solvable go out")
+              raise ValueError("This map is not solvable go out")
         
         engine = TheEngine(game_map)
         solution = PathFinder(game_map)
@@ -26,8 +26,8 @@ def main() -> None:
         picasso.build_turn_log(engine.final_drones_paths)
         print(picasso.format_turn_log())
         arcade.run()
-    except ValueError as e:
-                print(f"Parsing error: {e}")
+    except (ValueError, KeyboardInterrupt) as e:
+                print(f"{e}")
                 sys.exit(1)
 
 if __name__ == "__main__":

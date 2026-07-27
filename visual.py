@@ -1,9 +1,9 @@
 import arcade
-from typing import Tuple, Dict ,List
+from typing import Tuple, Dict, List
 
 class Visualizer(arcade.Window):
     def __init__(self, map_data) -> None:
-        super().__init__(title="fly with your ass" ,resizable=True)
+        super().__init__(title="Fly With Your Ass", resizable=True)
         self.map = map_data
         self.current_turn = 0
         self.is_moving = False
@@ -13,27 +13,56 @@ class Visualizer(arcade.Window):
         self.turn_log = {}
         self.maximize()
         self.calculate_zone_space()
-        self.turn_text = arcade.Text(f"Turn: {self.current_turn}", self.width - 100,self.height - 30 , arcade.color.WHITE , 16)
+        
+        self.turn_text = arcade.Text(
+            f"Turn: {self.current_turn}", 
+            self.width - 100, 
+            self.height - 30, 
+            arcade.color.WHITE, 
+            16
+        )
+
+        # Pre-initialize arcade.Text objects to avoid the PerformanceWarning
+        self.zone_top_labels = {}
+        self.zone_type_labels = {}
+        for zone_name, zone in self.map.zones_by_name.items():
+            self.zone_top_labels[zone_name] = arcade.Text(
+                f"0/{zone.max_drones}",
+                0, 0,
+                arcade.color.WHITE,
+                9,
+                anchor_x="center",
+                anchor_y="bottom",
+                bold=True
+            )
+            self.zone_type_labels[zone_name] = arcade.Text(
+                f"[{zone.zone_type}]",
+                0, 0,
+                arcade.color.LIGHT_GRAY,
+                10,
+                anchor_x="center",
+                anchor_y="top"
+            )
+
         arcade.set_background_color(arcade.color.DARK_SLATE_GRAY)
 
     def calculate_zone_space(self) -> None:
         first_zone = list(self.map.zones_by_name.values())[0]
         self.min_x, self.min_y = first_zone.position
         self.max_x, self.max_y = first_zone.position
-        for zone in self.map.zones_by_name:
-            x, y = self.map.zones_by_name[zone].position
+        for zone in self.map.zones_by_name.values():
+            x, y = zone.position
             self.min_x = min(self.min_x, x)
             self.min_y = min(self.min_y, y)
             self.max_x = max(self.max_x, x)
             self.max_y = max(self.max_y, y)
 
     def on_draw(self) -> None:
-
-            self.clear()  
-            self.draw_connections()
-            self.draw_zones()
-            self.draw_drones()
-            self.draw_hud()
+        self.clear()  
+        self.draw_connections()
+        self.draw_zones()
+        self.draw_drones()
+        self.draw_hud()
 
     def on_update(self, delta_time: float) -> None:
         if self.is_moving:
@@ -43,26 +72,32 @@ class Visualizer(arcade.Window):
                 self.is_moving = False  
 
     def on_resize(self, width, height):
-        self.turn_text.x, self.turn_text.y = width - 100,height - 30
+        self.turn_text.x, self.turn_text.y = width - 100, height - 30
 
     def on_key_press(self, symbol: int, modifiers: int) -> None:
         if arcade.key.ESCAPE == symbol:
             self.close()
         if arcade.key.SPACE == symbol:
-            if not self.is_moving and self.current_turn < max(self.turn_log):
+            if not self.is_moving and self.current_turn < max(self.turn_log, default=0):
                 self.previous_positions = self.turn_log[self.current_turn]   
                 self.current_turn += 1
                 self.turn_text.text = f"Turn: {self.current_turn}"
                 self.move_progress = 0.0
                 self.is_moving = True
 
+    def get_current_occupancy(self) -> Dict[str, int]:
+        """Helper to calculate drone count per zone/connection in the current turn."""
+        counts = {}
+        if self.current_turn in self.turn_log:
+            for location in self.turn_log[self.current_turn].values():
+                counts[location] = counts.get(location, 0) + 1
+        return counts
 
     def draw_drones(self) -> None:
         if self.current_turn not in self.turn_log:
             return
 
         for drone_id, current_location in self.turn_log[self.current_turn].items():
-
             if current_location in self.map.connections_by_name:
                 connection = self.map.connections_by_name[current_location]
                 x1, y1 = self.zone_to_screen(connection.zone1.position)
@@ -94,28 +129,42 @@ class Visualizer(arcade.Window):
 
     def draw_hud(self) -> None:
         self.turn_text.draw()
-        # arcade.draw_text(f"Turn: {self.current_turn}", self.width - 100, self.height - 30, arcade.color.WHITE, 16)
 
     def draw_zones(self) -> None:
-        if self.current_turn not in self.turn_log:
-            return
+        occupancy = self.get_current_occupancy()
 
-        for zone in self.map.zones_by_name.values():
+        for zone_name, zone in self.map.zones_by_name.items():
             center_x, center_y = self.zone_to_screen(zone.position)
             color = getattr(arcade.color, zone.color.upper(), arcade.color.HOT_MAGENTA)
             arcade.draw_circle_filled(center_x, center_y, 15, color)
 
+            # Retrieve drone occupancy
+            current_drones = occupancy.get(zone_name, 0)
+            
+            # Update and draw capacity label
+            top_label = self.zone_top_labels[zone_name]
+            top_label.text = f"{current_drones}/{zone.max_drones}"
+            top_label.x = center_x
+            top_label.y = center_y + 20
+            top_label.draw()
+
+            # Update and draw zone type label
+            type_label = self.zone_type_labels[zone_name]
+            type_label.x = center_x
+            type_label.y = center_y - 25
+            type_label.draw()
+
     def draw_connections(self) -> None:
-        for connection in self.map.connections_by_name:
-            start_x, start_y = self.zone_to_screen(self.map.connections_by_name[connection].zone1.position)
-            end_x, end_y = self.zone_to_screen(self.map.connections_by_name[connection].zone2.position)
+        for conn_name, connection in self.map.connections_by_name.items():
+            start_x, start_y = self.zone_to_screen(connection.zone1.position)
+            end_x, end_y = self.zone_to_screen(connection.zone2.position)
+            
+            # Draw line
             arcade.draw_line(start_x, start_y, end_x, end_y, arcade.color.BLACK, 2)
-
-
 
     def zone_to_screen(self, position: Tuple[int, int]) -> Tuple[float, float]:
         x, y = position
-        margin = 40
+        margin = 60
 
         if self.max_x == self.min_x:
             screen_x = self.width / 2
@@ -133,8 +182,16 @@ class Visualizer(arcade.Window):
 
         return screen_x, screen_y
     
-    def build_turn_log(self, final_drones_paths: Dict[str, List[Tuple[str, int]]]) -> Dict[int, Dict[str, str]]:
+    def build_turn_log(self, final_drones_paths: Dict[str, List[Tuple[str, int]]]) -> None:
+        # Find the absolute maximum turn across all drones to prevent drones from disappearing
+        max_turn = 0
+        if final_drones_paths:
+            max_turn = max(path[-1][1] for path in final_drones_paths.values() if path)
+
         for drone_id, path in final_drones_paths.items():
+            if not path:
+                continue
+            
             first_zone, first_turn = path[0]
             self.turn_log.setdefault(first_turn, {})[drone_id] = first_zone
 
@@ -154,6 +211,10 @@ class Visualizer(arcade.Window):
                     self.turn_log.setdefault(from_turn + 1, {})[drone_id] = connection_name
                     self.turn_log.setdefault(to_turn, {})[drone_id] = to_zone
 
+            # Pad the final destination until max_turn so early drones stay visually present at the end
+            last_zone, last_turn = path[-1]
+            for t in range(last_turn + 1, max_turn + 1):
+                self.turn_log.setdefault(t, {})[drone_id] = last_zone
 
     def format_turn_log(self) -> str:
         lines = []
@@ -162,10 +223,9 @@ class Visualizer(arcade.Window):
             current_turn = self.turn_log[turn]
             prev_turn = self.turn_log[turn - 1] if turn > 0 else {}
             movements = []
-            movements.append(f"TURN : {turn}")
             for drone, location in current_turn.items():
-                    if prev_turn.get(drone) != location:
-                        movements.append(f"D{drone}-{location}")
+                if prev_turn.get(drone) != location:
+                    movements.append(f"D{drone}-{location}")
 
             line = " ".join(movements)
             lines.append(line)
