@@ -1,35 +1,42 @@
+"""Module for calculating shortest paths using Dijkstra's algorithm."""
+
 import heapq
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 from map_cls import Map
-from typing import Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    from engine import TheEngine
+
 
 class PathFinder:
     """Handles routing logic using Dijkstra's algorithm."""
-    
-    def __init__(self, map_data: Map):
-        self.map = map_data
+
+    def __init__(self, map_data: Map) -> None:
+        """Initialize the pathfinder with the given map data."""
+        self.map: Map = map_data
         self.zone_distances: Dict[Tuple[str, int], float] = {}
         self.previous_zone: Dict[Tuple[str, int], Optional[Tuple[str, int]]] = {}
         self.to_visit: List[Tuple[float, Tuple[str, int]]] = []
 
-    def setup_dijkstra(self):
-        """Initializes the data structures before running the loop."""
+    def setup_dijkstra(self) -> None:
+        """Initialize the data structures before running the loop."""
         self.to_visit = []
         self.zone_distances.clear()
         self.previous_zone.clear()
-
         start_name = self.map.start_zone.name
         start_state = (start_name, 0)
         self.zone_distances[start_state] = 0.0
         self.previous_zone[start_state] = None
-        
         heapq.heappush(self.to_visit, (0.0, start_state))
 
     def get_space_time_neighbors(
-        self, current_state: Tuple[str, int], engine: 'TheEngine'
+        self, current_state: Tuple[str, int], engine: "TheEngine"
     ) -> List[Tuple[float, Tuple[str, int]]]:
         """
-        Generates valid next space-time state transitions.
-        Returns a list of tuples: (dijkstra_edge_cost, (neighbor_zone_name, next_turn))
+        Generate valid next space-time state transitions.
+
+        Returns:
+            List of tuples: (edge_cost, (neighbor_zone, next_turn)).
         """
         current_zone_name, current_turn = current_state
         next_turn = current_turn + 1
@@ -37,29 +44,35 @@ class PathFinder:
 
         if engine.is_zone_available(current_zone_name, next_turn):
             neighbors.append((1.1, (current_zone_name, next_turn)))
-        
+
         current_zone_obj = self.map.get_zone(current_zone_name)
+        if not current_zone_obj:
+            return neighbors
+
         physical_neighbors = self.map.get_neighbors_with_cost(current_zone_obj)
 
         for move_cost, neighbor_zone in physical_neighbors:
             neighbor_name = neighbor_zone.name
-
             if neighbor_zone.zone_type == "restricted":
                 transit_turn = current_turn + 1
                 arrival_turn = current_turn + 2
 
-                if not engine.is_link_available(current_zone_name, neighbor_name, current_turn):
+                if not engine.is_link_available(
+                    current_zone_name, neighbor_name, current_turn
+                ):
                     continue
-                if not engine.is_link_available(current_zone_name, neighbor_name, transit_turn):
+                if not engine.is_link_available(
+                    current_zone_name, neighbor_name, transit_turn
+                ):
                     continue
-
                 if not engine.is_zone_available(neighbor_name, arrival_turn):
                     continue
 
                 neighbors.append((move_cost, (neighbor_name, arrival_turn)))
-
-            else: 
-                if not engine.is_link_available(current_zone_name, neighbor_name, current_turn):
+            else:
+                if not engine.is_link_available(
+                    current_zone_name, neighbor_name, current_turn
+                ):
                     continue
                 if not engine.is_zone_available(neighbor_name, next_turn):
                     continue
@@ -67,11 +80,10 @@ class PathFinder:
                 neighbors.append((move_cost, (neighbor_name, next_turn)))
 
         return neighbors
-    
-    def calculate_short_path(self, engine: 'TheEngine') -> List[Tuple[str, int]]:
-        """Runs Dijkstra's algorithm and returns the optimal path."""
+
+    def calculate_short_path(self, engine: "TheEngine") -> List[Tuple[str, int]]:
+        """Run Dijkstra's algorithm and return the optimal path."""
         self.setup_dijkstra()
-        
         end_name = self.map.end_zone.name
         final_zone_state: Optional[Tuple[str, int]] = None
 
@@ -83,30 +95,28 @@ class PathFinder:
                 final_zone_state = current_state
                 break
 
-            if current_cost > self.zone_distances.get(current_state, float('inf')):
+            if current_cost > self.zone_distances.get(current_state, float("inf")):
                 continue
 
-            for edge_cost, neighbor_state in self.get_space_time_neighbors(current_state, engine):
+            neighbors = self.get_space_time_neighbors(current_state, engine)
+            for edge_cost, neighbor_state in neighbors:
                 new_cost = current_cost + edge_cost
-
-                if new_cost < self.zone_distances.get(neighbor_state, float('inf')):
+                if new_cost < self.zone_distances.get(neighbor_state, float("inf")):
                     self.zone_distances[neighbor_state] = new_cost
                     self.previous_zone[neighbor_state] = current_state
                     heapq.heappush(self.to_visit, (new_cost, neighbor_state))
-        
+
         if final_zone_state is None:
             return []
-            
+
         return self.reverse_path(final_zone_state)
-    
+
     def reverse_path(self, final_zone_state: Tuple[str, int]) -> List[Tuple[str, int]]:
-        """Walks previous_zone backwards to build the final path."""
+        """Walk previous_zone backwards to build the final path."""
         path: List[Tuple[str, int]] = []
         current: Optional[Tuple[str, int]] = final_zone_state
-
         while current is not None:
             path.append(current)
             current = self.previous_zone.get(current)
-
         path.reverse()
         return path
