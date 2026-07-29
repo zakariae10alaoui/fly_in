@@ -1,5 +1,3 @@
-"""Module for calculating shortest paths using Dijkstra's algorithm."""
-
 import heapq
 from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 from map_cls import Map
@@ -15,7 +13,9 @@ class PathFinder:
         """Initialize the pathfinder with the given map data."""
         self.map: Map = map_data
         self.zone_distances: Dict[Tuple[str, int], float] = {}
-        self.previous_zone: Dict[Tuple[str, int], Optional[Tuple[str, int]]] = {}
+        self.previous_zone: Dict[
+            Tuple[str, int], Optional[Tuple[str, int]]
+        ] = {}
         self.to_visit: List[Tuple[float, Tuple[str, int]]] = []
 
     def setup_dijkstra(self) -> None:
@@ -49,7 +49,9 @@ class PathFinder:
         if not current_zone_obj:
             return neighbors
 
-        physical_neighbors = self.map.get_neighbors_with_cost(current_zone_obj)
+        physical_neighbors = self.map.get_neighbors_with_cost(
+            current_zone_obj
+        )
 
         for move_cost, neighbor_zone in physical_neighbors:
             neighbor_name = neighbor_zone.name
@@ -81,7 +83,9 @@ class PathFinder:
 
         return neighbors
 
-    def calculate_short_path(self, engine: "TheEngine") -> List[Tuple[str, int]]:
+    def calculate_short_path(
+        self, engine: "TheEngine"
+    ) -> List[Tuple[str, int]]:
         """Run Dijkstra's algorithm and return the optimal path."""
         self.setup_dijkstra()
         end_name = self.map.end_zone.name
@@ -89,19 +93,25 @@ class PathFinder:
 
         while self.to_visit:
             current_cost, current_state = heapq.heappop(self.to_visit)
-            current_zone_name, current_turn = current_state
+            current_zone_name, _ = current_state
 
             if current_zone_name == end_name:
                 final_zone_state = current_state
                 break
 
-            if current_cost > self.zone_distances.get(current_state, float("inf")):
+            best_known = self.zone_distances.get(
+                current_state, float("inf")
+            )
+            if current_cost > best_known:
                 continue
 
             neighbors = self.get_space_time_neighbors(current_state, engine)
             for edge_cost, neighbor_state in neighbors:
                 new_cost = current_cost + edge_cost
-                if new_cost < self.zone_distances.get(neighbor_state, float("inf")):
+                best_neighbor = self.zone_distances.get(
+                    neighbor_state, float("inf")
+                )
+                if new_cost < best_neighbor:
                     self.zone_distances[neighbor_state] = new_cost
                     self.previous_zone[neighbor_state] = current_state
                     heapq.heappush(self.to_visit, (new_cost, neighbor_state))
@@ -111,7 +121,9 @@ class PathFinder:
 
         return self.reverse_path(final_zone_state)
 
-    def reverse_path(self, final_zone_state: Tuple[str, int]) -> List[Tuple[str, int]]:
+    def reverse_path(
+        self, final_zone_state: Tuple[str, int]
+    ) -> List[Tuple[str, int]]:
         """Walk previous_zone backwards to build the final path."""
         path: List[Tuple[str, int]] = []
         current: Optional[Tuple[str, int]] = final_zone_state

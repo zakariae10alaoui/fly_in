@@ -1,18 +1,14 @@
-"""Module for visualizing the drone paths using the Arcade library."""
-
 import arcade
-from typing import Tuple, Dict, List, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from map_cls import Map
+from typing import Tuple, Dict, List
+from map_cls import Map
 
 
 class Visualizer(arcade.Window):
     """Arcade Window class for rendering the map and drone movements."""
 
-    def __init__(self, map_data: "Map") -> None:
+    def __init__(self, map_data: Map) -> None:
         """Initialize the visualizer window and HUD text."""
-        super().__init__(title="Fly With Your Ass", resizable=True)
+        super().__init__(title="Fly With Your mind", resizable=True)
         self.map: "Map" = map_data
         self.current_turn: int = 0
         self.is_moving: bool = False
@@ -32,7 +28,6 @@ class Visualizer(arcade.Window):
             16,
         )
 
-        # Pre-initialize arcade.Text objects to avoid PerformanceWarning
         self.zone_top_labels: Dict[str, arcade.Text] = {}
         self.zone_type_labels: Dict[str, arcade.Text] = {}
 
@@ -43,8 +38,6 @@ class Visualizer(arcade.Window):
                 0,
                 arcade.color.WHITE,
                 9,
-                anchor_x="center",
-                anchor_y="bottom",
                 bold=True,
             )
             self.zone_type_labels[zone_name] = arcade.Text(
@@ -90,7 +83,6 @@ class Visualizer(arcade.Window):
 
     def on_resize(self, width: int, height: int) -> None:
         """Adjust HUD position upon window resize."""
-        super().on_resize(width, height)
         self.turn_text.x = width - 150
         self.turn_text.y = height - 30
 
@@ -104,7 +96,9 @@ class Visualizer(arcade.Window):
             if not self.is_moving and self.current_turn < max_turn:
                 self.previous_positions = self.turn_log[self.current_turn]
                 self.current_turn += 1
-                self.turn_text.text = f"Turn: {self.current_turn} / {max_turn}"
+                self.turn_text.text = (
+                    f"Turn: {self.current_turn} / {max_turn}"
+                )
                 self.move_progress = 0.0
                 self.is_moving = True
 
@@ -131,9 +125,15 @@ class Visualizer(arcade.Window):
                 target_y = (y1 + y2) / 2
             else:
                 target_zone = self.map.zones_by_name[current_location]
-                target_x, target_y = self.zone_to_screen(target_zone.position)
+                target_x, target_y = self.zone_to_screen(
+                    target_zone.position
+                )
 
-            if self.current_turn == 0 or drone_id not in self.previous_positions:
+            not_moved_yet = (
+                self.current_turn == 0
+                or drone_id not in self.previous_positions
+            )
+            if not_moved_yet:
                 draw_x, draw_y = target_x, target_y
             else:
                 prev_location = self.previous_positions[drone_id]
@@ -163,7 +163,9 @@ class Visualizer(arcade.Window):
         occupancy = self.get_current_occupancy()
         for zone_name, zone in self.map.zones_by_name.items():
             center_x, center_y = self.zone_to_screen(zone.position)
-            color = getattr(arcade.color, zone.color.upper(), arcade.color.HOT_MAGENTA)
+            color = getattr(
+                arcade.color, zone.color.upper(), arcade.color.HOT_MAGENTA
+            )
             arcade.draw_circle_filled(center_x, center_y, 15, color)
 
             current_drones = occupancy.get(zone_name, 0)
@@ -187,9 +189,13 @@ class Visualizer(arcade.Window):
             z2_pos = connection.zone2.position
             end_x, end_y = self.zone_to_screen(z2_pos)
 
-            arcade.draw_line(start_x, start_y, end_x, end_y, arcade.color.BLACK, 2)
+            arcade.draw_line(
+                start_x, start_y, end_x, end_y, arcade.color.BLACK, 2
+            )
 
-    def zone_to_screen(self, position: Tuple[int, int]) -> Tuple[float, float]:
+    def zone_to_screen(
+        self, position: Tuple[int, int]
+    ) -> Tuple[float, float]:
         """Convert logical grid coordinates to pixel screen coordinates."""
         x, y = position
         margin = 60
@@ -214,9 +220,11 @@ class Visualizer(arcade.Window):
         self, final_drones_paths: Dict[int, List[Tuple[str, int]]]
     ) -> None:
         """Populate the turn_log with chronological steps for all drones."""
-  
+
         if final_drones_paths:
-            max_turn = max(path[-1][1] for path in final_drones_paths.values() if path)
+            max_turn = max(
+                path[-1][1] for path in final_drones_paths.values() if path
+            )
 
         for drone_id, path in final_drones_paths.items():
             if not path:
@@ -245,7 +253,6 @@ class Visualizer(arcade.Window):
 
                     self.turn_log.setdefault(to_turn, {})[drone_id] = to_zone
 
-            # Pad the final destination until max_turn
             last_zone, last_turn = path[-1]
             for t in range(last_turn + 1, max_turn + 1):
                 self.turn_log.setdefault(t, {})[drone_id] = last_zone
@@ -257,7 +264,7 @@ class Visualizer(arcade.Window):
             current_turn = self.turn_log[turn]
             prev_turn = self.turn_log[turn - 1] if turn > 0 else {}
             movements = []
-  
+
             for drone, location in current_turn.items():
                 if prev_turn.get(drone) != location:
                     movements.append(f"D{drone}-{location}")

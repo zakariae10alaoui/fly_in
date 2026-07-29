@@ -1,5 +1,3 @@
-"""Module for the simulation engine managing drone routing and reservations."""
-
 from typing import Dict, Tuple, List, TYPE_CHECKING
 from map_cls import Map
 
@@ -17,7 +15,9 @@ class TheEngine:
         self.link_bookings: Dict[Tuple[str, str, int], int] = {}
         self.final_drones_paths: Dict[int, List[Tuple[str, int]]] = {}
 
-    def get_link_key(self, zone_a: str, zone_b: str, turn: int) -> Tuple[str, str, int]:
+    def get_link_key(
+        self, zone_a: str, zone_b: str, turn: int
+    ) -> Tuple[str, str, int]:
         """
         Normalize connection identifiers alphabetically.
 
@@ -76,7 +76,8 @@ class TheEngine:
         """
         Iterate through drones one by one to route them.
 
-        Finds their safe space-time path and immediately updates reservations.
+        Finds their safe space-time path and immediately updates
+        reservations.
         """
         for drone in self.map.drones:
             safe_path = pathfinder.calculate_short_path(self)
@@ -96,19 +97,6 @@ class TheEngine:
                     if current_zone != next_zone:
                         gap = next_turn - current_turn
                         for t in range(gap):
-                            self.reserve_link(current_zone, next_zone, current_turn + t)
-    def display_capacity_info(self) -> None:
-        all_turns = [turn for _,turn in self.zone_bookings.keys()]
-
-        max_turns = max(all_turns)
-        for turn in range(max_turns + 1):
-            print(f"turn {turn}")
-            for name,zone in self.map.zones_by_name.items():
-                used = self.zone_bookings.get((name , turn) , 0)
-                print(f"{name} ; {used} / {zone.max_drones}")
-
-            for name,connection in self.map.connections_by_name.items():
-                key= self.get_link_key(connection.zone1.name , connection.zone2.name , turn)
-                used = self.link_bookings.get((key) , 0)
-                print(f"{name} ; {used} / {zone.max_drones}")
-                
+                            self.reserve_link(
+                                current_zone, next_zone, current_turn + t
+                            )

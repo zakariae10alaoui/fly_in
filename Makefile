@@ -1,4 +1,3 @@
-
 MAP ?= config.txt
 
 run:

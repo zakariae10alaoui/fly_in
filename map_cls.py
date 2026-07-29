@@ -19,7 +19,6 @@ class CreateZone:
         self.color: str = color
         self.zone_type: str = zone_type
         self.max_drones: int = max_drones
-        self.current_drones: List["CreateDrone"] = []
 
 
 class CreateConnection:
@@ -32,7 +31,6 @@ class CreateConnection:
         self.zone1: CreateZone = zone1
         self.zone2: CreateZone = zone2
         self.max_link_capacity: int = max_link_capacity
-        self.current_usage: int = 0
 
 
 class CreateDrone:
@@ -42,7 +40,6 @@ class CreateDrone:
         """Initialize a drone with its starting zone."""
         self.drone_id: int = drone_id
         self.current_zone: CreateZone = start_zone
-
 
 
 class Map:
@@ -62,7 +59,9 @@ class Map:
         self.start_zone: CreateZone = start_zone
         self.end_zone: CreateZone = end_zone
         self.zones_by_name: Dict[str, CreateZone] = zones_by_name
-        self.connections_by_name: Dict[str, CreateConnection] = connections_by_name
+        self.connections_by_name: Dict[
+            str, CreateConnection
+        ] = connections_by_name
         self.drones: List[CreateDrone] = drones
 
     def get_neighbors_with_cost(
