@@ -1,7 +1,7 @@
 MAP ?= config.txt
 
 run:
-	python3 fly_in.py $(MAP)
+	python3 fly_in.py $(MAP) || true
 
 install:
 	pip install -r requirements.txt
